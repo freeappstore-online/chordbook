@@ -8,7 +8,13 @@ Live: https://chordbook.freeappstore.online
 
 ## Song library
 
-Six traditional public-domain lyric selections with simple practice arrangements. Modern song discovery contains twelve popular-song references, simplified chord palettes and external chart-search links. These are not complete transcriptions and do not include copyrighted lyrics. Users can enter their own lyrics or import their own ChordPro/plain-text sheets. Library content attribution is in `web/src/library.ts` and each traditional sheet's note.
+The searchable catalog contains **770 entries** across classic rock, pop, indie, country, folk, soul, reggae, sea shanties, carols and more:
+
+- **55 traditional lyric selections with practice chords** (not necessarily every verse).
+- **223 simplified chord practice starters** for modern songs, without copyrighted lyrics. Key/capo values are practice settings, not verified recording keys; palettes are not full transcriptions.
+- **492 chart references** with external search links and a create-your-own-sheet action. No chords or keys are inferred for these entries.
+
+Browse by genre and availability, sort by artist/title, and search without matching accents or punctuation. Results show 24 entries per page. Existing device-local libraries are preserved; catalog songs are added only when chosen. New installations begin with the traditional collection. Users can enter their own lyrics or import their own ChordPro/plain-text sheets. Library content attribution is in `web/src/library.ts`, `web/src/traditional-extra.ts` and each traditional sheet's note. Modern titles and artists are curated factual references in `web/src/catalog-data.ts`; practice palettes are in `web/src/chord-starters.ts`. No scraped lyric dataset is included.
 
 ## Development
 

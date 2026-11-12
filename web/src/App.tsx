@@ -1,3 +1,5 @@
+import Discover from "./Discover";
+import { CATALOG } from "./catalog";
 import Reader, { type ReaderMemory } from "./Reader";
 import Editor from "./Editor";
 import { useEffect, useRef, useState } from "react";
@@ -25,7 +27,7 @@ import {
   validSongs,
   type Song,
 } from "./music";
-import { LIBRARY, POPULAR, popularStarter } from "./library";
+import { LIBRARY } from "./library";
 import { pwa } from "./pwa";
 export const fas = initApp({ appId: "chordbook" });
 const INITIAL = getPreference("chordbook", "songs", validSongs);
@@ -112,6 +114,7 @@ export default function App() {
     }
   };
   const add = (next: Song) => {
+    setPlaying(false);
     if (persist([...songs, next])) {
       setSelected(next.id);
       setMobileSheet(true);
@@ -216,7 +219,7 @@ export default function App() {
                 }}
               >
                 <Music2 size={19} />
-                Discover songs
+                Discover songs<span>{CATALOG.length}</span>
               </button>
             </nav>
             <div className="sidebar-tip">
@@ -251,7 +254,7 @@ export default function App() {
                 </h1>
               </div>
               <span className="count-pill">
-                {tab === "discover" ? POPULAR.length : visible.length} songs
+                {tab === "discover" ? CATALOG.length : visible.length} songs
               </span>
             </div>
             <label className="search-box">
@@ -268,76 +271,33 @@ export default function App() {
                 </button>
               )}
             </label>
+            {tab === "library" && (
+              <button
+                className="library-catalog-banner"
+                onClick={() => {
+                  setTab("discover");
+                  setSearch("");
+                }}
+              >
+                <Music2 size={18} />
+                <span>
+                  <strong>{CATALOG.length} songs to explore</strong>
+                  <small>
+                    Browse by artist, genre, or ready-to-play sheets
+                  </small>
+                </span>
+                <span>→</span>
+              </button>
+            )}
             {tab === "discover" ? (
-              <>
-                <div className="discover-intro">
-                  <span className="eyebrow">CAMPFIRE FAVORITES</span>
-                  <h2>
-                    Know it. Play it.<span> Make it yours.</span>
-                  </h2>
-                  <p>
-                    Popular songs to start from. Add a chord palette, then bring
-                    your own lyrics and arrangement.
-                  </p>
-                </div>
-                <div className="popular-list">
-                  {POPULAR.filter((s) =>
-                    `${s.title} ${s.artist}`
-                      .toLowerCase()
-                      .includes(search.toLowerCase()),
-                  ).map((s, i) => (
-                    <div className="popular-card" key={s.title}>
-                      <span className="song-number">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div>
-                        <strong>{s.title}</strong>
-                        <small>{s.artist}</small>
-                        <span className="popular-chords">
-                          {s.chords.join(" · ")}
-                        </span>
-                        <a
-                          href={`https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(s.title + " " + s.artist)}`}
-                          target="_blank"
-                          rel="noreferrer"
-                        >
-                          Find a chart ↗
-                        </a>
-                      </div>
-                      <button
-                        className="icon-button"
-                        aria-label={`Add ${s.title}`}
-                        onClick={() => add(popularStarter(s))}
-                      >
-                        <Plus size={20} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <p className="library-footnote">
-                  Practice starters contain chords only. They are not full song
-                  transcriptions. Full lyric sheets below use traditional
-                  public-domain material.
-                </p>
-                <h3 className="section-heading">
-                  Ready to play · Traditional favorites
-                </h3>
-                {LIBRARY.map((s) => (
-                  <button
-                    className="traditional-add"
-                    key={s.id}
-                    onClick={() => {
-                      const existing = songs.find((x) => x.id === s.id);
-                      if (existing) choose(existing);
-                      else add(s);
-                    }}
-                  >
-                    <Music2 size={17} />
-                    <span>{s.title}</span>
-                    <Plus size={16} />
-                  </button>
-                ))}
-              </>
+              <Discover
+                songs={songs}
+                query={search}
+                setQuery={setSearch}
+                add={add}
+                choose={choose}
+                draft={setDraft}
+              />
             ) : (
               <>
                 <div className="list-label">
@@ -444,7 +404,7 @@ export default function App() {
                       setSearch("");
                     }}
                   >
-                    Explore popular songs <span>↗</span>
+                    Explore {CATALOG.length} songs <span>↗</span>
                   </button>
                 </div>
               </>

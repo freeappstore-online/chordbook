@@ -1,4 +1,5 @@
 import type { Song } from "./music";
+import { EXTRA_TRADITIONAL } from "./traditional-extra";
 const traditional = (
   id: string,
   title: string,
@@ -157,6 +158,7 @@ When the [G]sun re[D]fuses to [G]shine.
 [G]    [C]    [G] [D] [G]`,
     "Traditional spiritual. Simple practice arrangement; not a transcription of a recording.",
   ),
+  ...EXTRA_TRADITIONAL,
 ];
 export interface PopularSong {
   title: string;
@@ -261,7 +263,7 @@ export function popularStarter(item: PopularSong): Song {
     bpm: 90,
     favorite: false,
     kind: "starter",
-    note: "Simplified chord palette for practice, not a complete song transcription. Add your own lyrics and arrangement.",
+    note: "Simplified practice chord palette, not a complete transcription. Key and capo are practice settings, not a claim about the recording. Add your own lyrics and arrangement.",
     body: `{section: Chord practice}\n${item.chords.map((c) => "[" + c + "]").join("    ")}\n\n{section: Verse}\n\n{section: Chorus}\n`,
   };
 }
