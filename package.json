@@ -1,0 +1,21 @@
+{
+  "name": "chordbook",
+  "private": true,
+  "packageManager": "pnpm@10.30.3",
+  "engines": {
+    "node": ">=22"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
+  },
+  "scripts": {
+    "dev": "pnpm --filter @chordbook/web dev",
+    "build": "pnpm --filter @chordbook/web build",
+    "preview": "pnpm --filter @chordbook/web preview",
+    "typecheck": "pnpm --filter @chordbook/web exec tsc -b",
+    "test": "pnpm --filter @chordbook/web test"
+  }
+}
