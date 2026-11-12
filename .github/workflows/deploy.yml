@@ -24,4 +24,5 @@ jobs:
       contents: write
       id-token: write
     with:
+      checks: pnpm typecheck && pnpm test
       vars: ${{ toJSON(vars) }}

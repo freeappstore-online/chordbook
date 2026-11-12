@@ -1,0 +1,500 @@
+import { useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  Download,
+  Edit3,
+  Guitar,
+  Maximize,
+  Minus,
+  Pause,
+  Play,
+  Plus,
+  Settings2,
+} from "lucide-react";
+import { chordsIn, transpose, toChordPro, type Song } from "./music";
+import { ChordDiagram, Sheet } from "./Sheet";
+export interface ReaderMemory {
+  position: number;
+  shift: number;
+  size: number;
+}
+export default function Reader({
+  song,
+  memory,
+  active,
+  playing,
+  setPlaying,
+  edit,
+  back,
+  update,
+  notify,
+  next,
+}: {
+  song: Song;
+  memory: Map<string, ReaderMemory>;
+  active: boolean;
+  playing: boolean;
+  setPlaying: (v: boolean) => void;
+  edit: () => void;
+  back: () => void;
+  update: (s: Song) => boolean;
+  notify: (s: string) => void;
+  next: () => void;
+}) {
+  const [shift, setShift] = useState(memory.get(song.id)?.shift ?? 0),
+    [capo, setCapo] = useState(song.capo),
+    [size, setSize] = useState(memory.get(song.id)?.size ?? 19),
+    [speed, setSpeed] = useState(24),
+    [flats, setFlats] = useState(false),
+    [diagrams, setDiagrams] = useState(true),
+    [metro, setMetro] = useState(false),
+    [bpm, setBpm] = useState(song.bpm),
+    [settings, setSettings] = useState(false);
+  const [tempoText, setTempoText] = useState(String(song.bpm));
+  const scroll = useRef<HTMLDivElement>(null);
+  const reader = useRef<HTMLElement>(null);
+  const snapshot = useRef<ReaderMemory>({
+    position: memory.get(song.id)?.position ?? 0,
+    shift,
+    size,
+  });
+  snapshot.current = { ...snapshot.current, shift, size };
+  useEffect(() => {
+    const el = scroll.current;
+    if (el) el.scrollTop = snapshot.current.position;
+    const record = () => {
+      if (el) snapshot.current.position = el.scrollTop;
+    };
+    el?.addEventListener("scroll", record);
+    return () => {
+      memory.set(song.id, snapshot.current);
+      el?.removeEventListener("scroll", record);
+    };
+  }, [memory, song.id]);
+  useEffect(() => {
+    setCapo(song.capo);
+    setBpm(song.bpm);
+    setTempoText(String(song.bpm));
+  }, [song.capo, song.bpm]);
+  const [wake, setWake] = useState(false);
+  useEffect(() => {
+    if (!active) {
+      setPlaying(false);
+      setMetro(false);
+    }
+  }, [active, setPlaying]);
+  useEffect(() => {
+    if (!playing || !active) return;
+    let id = 0,
+      last = 0,
+      remainder = 0;
+    const step = (time: number) => {
+      if (last && scroll.current) {
+        remainder += (Math.min(time - last, 100) / 1000) * speed;
+        const whole = Math.floor(remainder);
+        if (whole) {
+          scroll.current.scrollTop += whole;
+          remainder -= whole;
+        }
+        if (
+          scroll.current.scrollHeight > scroll.current.clientHeight &&
+          scroll.current.scrollTop >=
+            scroll.current.scrollHeight - scroll.current.clientHeight - 1
+        ) {
+          setPlaying(false);
+          return;
+        }
+      }
+      last = time;
+      id = requestAnimationFrame(step);
+    };
+    id = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(id);
+  }, [playing, speed, active, setPlaying]);
+  useEffect(() => {
+    if (!active || (!playing && !wake)) return;
+    let lock: WakeLockSentinel | undefined;
+    let cancelled = false;
+    const acquire = async () => {
+      if (document.visibilityState !== "visible" || !("wakeLock" in navigator))
+        return;
+      try {
+        const acquired = await navigator.wakeLock.request("screen");
+        if (cancelled) void acquired.release();
+        else lock = acquired;
+      } catch {
+        notify("Keep-awake is unavailable. Your device may still dim.");
+      }
+    };
+    void acquire();
+    const visibility = () => {
+      if (document.hidden) {
+        setPlaying(false);
+        setMetro(false);
+      } else void acquire();
+    };
+    document.addEventListener("visibilitychange", visibility);
+    return () => {
+      cancelled = true;
+      void lock?.release();
+      document.removeEventListener("visibilitychange", visibility);
+    };
+  }, [playing, wake, active, notify, setPlaying]);
+  useEffect(() => {
+    if (!metro || !active) return;
+    const audio = new AudioContext();
+    void audio.resume().catch(() => {
+      setMetro(false);
+      notify("Audio could not start. Tap the metronome again.");
+    });
+    const tick = () => {
+      const o = audio.createOscillator(),
+        g = audio.createGain();
+      o.frequency.value = 900;
+      g.gain.setValueAtTime(0.12, audio.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, audio.currentTime + 0.06);
+      o.connect(g);
+      g.connect(audio.destination);
+      o.start();
+      o.stop(audio.currentTime + 0.07);
+    };
+    tick();
+    const timer = setInterval(tick, 60000 / bpm);
+    const hide = () => {
+      if (document.hidden) setMetro(false);
+    };
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      clearInterval(timer);
+      void audio.close();
+      document.removeEventListener("visibilitychange", hide);
+    };
+  }, [metro, bpm, active, notify]);
+  const chordList = chordsIn(song.body).map((c) => transpose(c, shift, flats));
+  const exportSong = () => {
+    const transposed = {
+      ...song,
+      key: transpose(song.key, shift, flats),
+      capo,
+      bpm,
+      body: song.body.replace(
+        /\[([^\]]+)\]/g,
+        (_, c: string) => `[${transpose(c, shift, flats)}]`,
+      ),
+    };
+    download(
+      toChordPro(transposed),
+      `${song.title.replace(/[^a-z0-9]/gi, "-")}.cho`,
+      "text/plain",
+    );
+    notify("ChordPro file exported with your current transpose and capo.");
+  };
+  return (
+    <article ref={reader} className="song-reader">
+      <div className="reader-top">
+        <button className="mobile-back" onClick={back}>
+          <ArrowLeft size={18} /> Songs
+        </button>
+        <span className="eyebrow desktop-reader-label">
+          <span className="status-dot" /> ON YOUR MUSIC STAND
+        </span>
+        <div className="reader-actions">
+          <button
+            className="icon-button"
+            aria-label="Export song"
+            onClick={exportSong}
+          >
+            <Download size={18} />
+          </button>
+          <button
+            className="icon-button"
+            aria-label="Fullscreen song"
+            onClick={() => {
+              if (document.fullscreenElement) void document.exitFullscreen();
+              else if (reader.current?.requestFullscreen)
+                void reader.current
+                  .requestFullscreen()
+                  .catch(() =>
+                    notify("Fullscreen is unavailable in this browser."),
+                  );
+              else
+                notify(
+                  "Fullscreen is unavailable. Use the play view as your music stand.",
+                );
+            }}
+          >
+            <Maximize size={17} />
+          </button>
+          <button
+            className="small-button"
+            onClick={() => {
+              setPlaying(false);
+              setMetro(false);
+              edit();
+            }}
+          >
+            <Edit3 size={15} /> Edit song
+          </button>
+        </div>
+      </div>
+      <div className="song-heading">
+        <span className="eyebrow">
+          {song.kind === "traditional"
+            ? "THE CLASSICS NEVER GET OLD"
+            : song.kind === "starter"
+              ? "MAKE THIS ONE YOURS"
+              : "FROM YOUR SONGBOOK"}
+        </span>
+        <h2>{song.title}</h2>
+        <p>
+          {song.artist || "Your original"} <span>·</span>{" "}
+          {song.kind === "traditional"
+            ? "Acoustic arrangement"
+            : song.kind === "starter"
+              ? "Chord practice starter"
+              : "Personal chord sheet"}
+        </p>
+      </div>
+      <div className="play-controls">
+        <div className="control-group">
+          <span>TRANSPOSE</span>
+          <div className="stepper">
+            <button
+              aria-label="Transpose down"
+              onClick={() => setShift((s) => s - 1)}
+            >
+              <Minus size={16} />
+            </button>
+            <strong data-testid="song-key">
+              {transpose(song.key, shift, flats)}
+            </strong>
+            <button
+              aria-label="Transpose up"
+              onClick={() => setShift((s) => s + 1)}
+            >
+              <Plus size={16} />
+            </button>
+          </div>
+        </div>
+        <div className="control-group">
+          <label htmlFor="capo">CAPO</label>
+          <div className="capo-select">
+            <select
+              id="capo"
+              value={capo}
+              onChange={(e) => setCapo(+e.target.value)}
+            >
+              {Array.from({ length: 13 }, (_, i) => (
+                <option key={i} value={i}>
+                  {i === 0 ? "No capo" : `Fret ${i}`}
+                </option>
+              ))}
+            </select>
+            <ChevronDown size={13} />
+          </div>
+        </div>
+        <div className="control-group text-control">
+          <span>TEXT SIZE</span>
+          <div className="stepper">
+            <button
+              aria-label="Smaller song text"
+              disabled={size <= 14}
+              onClick={() => setSize((s) => s - 1)}
+            >
+              A−
+            </button>
+            <button
+              aria-label="Larger song text"
+              disabled={size >= 34}
+              onClick={() => setSize((s) => s + 1)}
+            >
+              A+
+            </button>
+          </div>
+        </div>
+        <button
+          className={`icon-button settings-toggle ${settings ? "on" : ""}`}
+          aria-expanded={settings}
+          aria-label="Playing settings"
+          onClick={() => setSettings((s) => !s)}
+        >
+          <Settings2 size={19} />
+        </button>
+      </div>
+      <div className="pitch-note">
+        Chord shapes in <strong>{transpose(song.key, shift, flats)}</strong>{" "}
+        <span>·</span> Sounds in{" "}
+        <strong>{transpose(song.key, shift + capo, flats)}</strong>
+        {shift !== 0 && <button onClick={() => setShift(0)}>Reset key</button>}
+      </div>
+      {settings && (
+        <div className="reader-settings">
+          <label>
+            <input
+              type="checkbox"
+              checked={diagrams}
+              onChange={(e) => setDiagrams(e.target.checked)}
+            />
+            Chord diagrams
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={flats}
+              onChange={(e) => setFlats(e.target.checked)}
+            />
+            Prefer flats (♭)
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={wake}
+              onChange={(e) => {
+                setWake(e.target.checked);
+                if (e.target.checked && !("wakeLock" in navigator))
+                  notify(
+                    "This browser does not support keeping the screen awake.",
+                  );
+              }}
+            />
+            Keep screen awake
+          </label>
+          <button
+            onClick={() => {
+              if (update({ ...song, capo, bpm }))
+                notify("Capo and tempo saved to this song.");
+            }}
+          >
+            <Check size={15} />
+            Save capo & tempo
+          </button>
+        </div>
+      )}
+      {diagrams && chordList.length > 0 && (
+        <div className="chord-diagrams" aria-label="Guitar chord shapes">
+          {chordList.map((c) => (
+            <ChordDiagram key={c} chord={c} />
+          ))}
+        </div>
+      )}
+      <div
+        ref={scroll}
+        className="sheet-scroll"
+        style={{ "--sheet-size": `${size / 16}rem` } as CSSProperties}
+        tabIndex={0}
+        aria-label="Scrollable chord sheet"
+      >
+        <Sheet body={song.body} shift={shift} flats={flats} />
+        {song.kind === "starter" && (
+          <div className="starter-note">
+            <Edit3 size={20} />
+            <strong>Your arrangement starts here.</strong>
+            <p>
+              This is a simplified chord palette. Tap Edit song to add your
+              lyrics and place chords exactly where you want them.
+            </p>
+            <button onClick={edit}>
+              Add lyrics <Plus size={15} />
+            </button>
+          </div>
+        )}
+        <div className="end-mark">◇</div>
+        <p className="arrangement-note">
+          {song.note || "Your personal chord sheet. Saved on this device."}
+        </p>
+      </div>
+      <div className="transport">
+        <button
+          className={`play-button ${playing ? "running" : ""}`}
+          onClick={() => {
+            if (
+              !playing &&
+              scroll.current &&
+              scroll.current.scrollTop >=
+                scroll.current.scrollHeight - scroll.current.clientHeight - 1
+            )
+              scroll.current.scrollTop = 0;
+            setPlaying(!playing);
+          }}
+          aria-label={playing ? "Pause autoscroll" : "Start autoscroll"}
+        >
+          {playing ? (
+            <Pause size={19} fill="currentColor" />
+          ) : (
+            <Play size={19} fill="currentColor" />
+          )}
+          <span>{playing ? "Pause" : "Autoscroll"}</span>
+        </button>
+        <label className="scroll-speed">
+          SPEED
+          <input
+            aria-label="Autoscroll speed"
+            type="range"
+            min="8"
+            max="70"
+            value={speed}
+            onChange={(e) => setSpeed(+e.target.value)}
+          />
+          <span>{speed}</span>
+        </label>
+        <div className="tempo-control">
+          <button
+            className={metro ? "metronome active" : "metronome"}
+            aria-label={metro ? "Stop metronome" : "Start metronome"}
+            aria-pressed={metro}
+            onClick={() => setMetro((v) => !v)}
+          >
+            <span className="metro-dot" />♩
+          </button>
+          <label>
+            <input
+              aria-label="Tempo BPM"
+              type="number"
+              min="30"
+              max="240"
+              value={tempoText}
+              onChange={(e) => setTempoText(e.target.value)}
+              onBlur={() => {
+                const next = Math.min(
+                  240,
+                  Math.max(30, Number(tempoText) || 90),
+                );
+                setBpm(next);
+                setTempoText(String(next));
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") e.currentTarget.blur();
+              }}
+            />
+            <span>BPM</span>
+          </label>
+        </div>
+        <button
+          className="next-song"
+          onClick={() => {
+            setPlaying(false);
+            setMetro(false);
+            next();
+          }}
+          aria-label="Next song"
+        >
+          Next →
+        </button>
+      </div>
+      <div className="reader-bottom">
+        <span>Just you, your guitar, and a good song.</span>
+        <Guitar size={15} />
+      </div>
+    </article>
+  );
+}
+function download(text: string, name: string, type: string) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}

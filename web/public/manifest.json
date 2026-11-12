@@ -1,6 +1,6 @@
 {
-  "name": "chordbook",
-  "short_name": "chordbook",
+  "name": "Chordbook — Guitar chords & lyrics",
+  "short_name": "Chordbook",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
