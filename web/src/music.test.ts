@@ -42,6 +42,8 @@ describe("guitar chord sheets", () => {
     expect(validSongs(LIBRARY)).toBe(true);
     expect(validSongs(POPULAR.map(popularStarter))).toBe(true);
     expect(validSongs([{ ...LIBRARY[0], capo: 99 }])).toBe(false);
+    expect(validSongs([{ ...LIBRARY[0], shift: -3 }])).toBe(true);
+    expect(validSongs([{ ...LIBRARY[0], shift: 12 }])).toBe(false);
     expect(validSongs([{ title: "bad" }])).toBe(false);
   });
   it("folds chords-over-lyrics text into ChordPro and leaves ChordPro alone", () => {

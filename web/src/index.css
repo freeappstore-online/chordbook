@@ -266,13 +266,6 @@
   .brand strong .brand-period {
     color: var(--cb-orange);
   }
-  .brand div > span:not(.brand-period) {
-    display: block;
-    font-size: 9px;
-    letter-spacing: 0.15px;
-    color: var(--cb-muted);
-    margin-top: 4px;
-  }
   .chordbook .primary {
     background: var(--cb-orange);
     color: var(--cb-bg);
@@ -297,13 +290,6 @@
     margin-left: auto;
     font-weight: 400;
     opacity: 0.55;
-  }
-  .sidebar-caption {
-    margin: 34px 12px 13px;
-    font-size: 9px;
-    font-weight: 800;
-    letter-spacing: 1.8px;
-    color: var(--cb-muted);
   }
   .collection-nav {
     display: grid;
@@ -333,35 +319,6 @@
   }
   .collection-nav button:hover {
     background: var(--cb-soft);
-  }
-  .sidebar-tip {
-    margin-top: 62px;
-    padding: 22px 14px;
-    background: color-mix(in srgb, var(--cb-orange) 4%, var(--cb-bg));
-    border: 1px solid var(--cb-border);
-    border-radius: 10px;
-  }
-  .tiny-icon {
-    color: var(--cb-orange);
-    margin-bottom: 13px;
-  }
-  .sidebar-tip strong {
-    font-family: var(--font-display);
-    font-size: 15px;
-    line-height: 1.5;
-    display: block;
-  }
-  .sidebar-tip p {
-    color: var(--cb-muted);
-    font-size: 11px;
-    line-height: 1.8;
-    margin: 7px 0 20px;
-  }
-  .sidebar-tip > span {
-    font-size: 7px;
-    letter-spacing: 0.9px;
-    font-weight: 700;
-    color: var(--cb-orange);
   }
   .import-button {
     margin-top: auto;
@@ -603,6 +560,7 @@
     gap: 10px;
   }
   .reader-actions {
+    margin-left: auto;
     display: flex;
     align-items: center;
     gap: 5px;
@@ -643,124 +601,6 @@
     line-height: 1.15;
     letter-spacing: -1.2px;
     margin: 10px 0 9px;
-  }
-  .play-controls {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-    border-top: 1px solid var(--cb-border);
-    padding-top: 18px;
-  }
-  .control-group > span,
-  .control-group > label {
-    font-size: 7px;
-    letter-spacing: 1px;
-    font-weight: 700;
-    color: var(--cb-muted);
-    display: block;
-    margin-bottom: 7px;
-  }
-  .stepper {
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--cb-border);
-    border-radius: 6px;
-    overflow: hidden;
-    height: 35px;
-  }
-  .stepper button {
-    min-width: 34px;
-    min-height: 35px;
-    display: grid;
-    place-items: center;
-    color: var(--cb-muted);
-    background: transparent;
-    border: 0;
-    font-size: 11px;
-  }
-  .stepper strong {
-    min-width: 37px;
-    text-align: center;
-    font-size: 12px;
-    font-weight: 800;
-  }
-  .stepper button:hover {
-    background: var(--cb-soft);
-  }
-  .text-control .stepper button + button {
-    border-left: 1px solid var(--cb-border);
-  }
-  .capo-select {
-    display: flex;
-    align-items: center;
-    position: relative;
-  }
-  .capo-select select {
-    appearance: none;
-    padding: 0 25px 0 10px;
-    height: 35px;
-    border: 1px solid var(--cb-border);
-    border-radius: 6px;
-    background: transparent;
-    color: inherit;
-    font-size: 11px;
-  }
-  .capo-select svg {
-    position: absolute;
-    right: 8px;
-    pointer-events: none;
-  }
-  .settings-toggle {
-    margin-left: auto;
-    margin-top: 15px;
-  }
-  .pitch-note {
-    font-size: 8px;
-    color: var(--cb-muted);
-    display: flex;
-    gap: 5px;
-    margin: 12px 0 18px;
-    align-items: center;
-  }
-  .pitch-note strong {
-    font-weight: 600;
-  }
-  .pitch-note button {
-    border: 0;
-    background: transparent;
-    color: var(--cb-orange);
-    font-size: 9px;
-    margin-left: auto;
-  }
-  .reader-settings {
-    border: 1px solid var(--cb-border);
-    padding: 10px;
-    border-radius: 8px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    font-size: 10px;
-    margin-bottom: 15px;
-    background: var(--cb-bg);
-  }
-  .reader-settings label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 6px;
-  }
-  .reader-settings button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    border: 0;
-    border-radius: 5px;
-    background: var(--cb-soft);
-    color: var(--cb-orange);
-    padding: 8px;
-  }
-  .reader-settings input {
-    accent-color: var(--cb-orange);
   }
   .chord-diagrams {
     display: flex;
@@ -961,18 +801,6 @@
     color: var(--cb-muted);
     font-size: 9px;
     min-height: 40px;
-  }
-  .reader-bottom {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 8px;
-    color: var(--cb-muted);
-    padding: 15px 0 1px;
-  }
-  .reader-bottom span {
-    font-family: Georgia, serif;
-    font-style: italic;
   }
   .mobile-back {
     display: none;
@@ -1420,9 +1248,6 @@
     .brand strong {
       font-size: 19px;
     }
-    .brand div > span:not(.brand-period) {
-      font-size: 8px;
-    }
     .brand-mark {
       width: 31px;
     }
@@ -1431,9 +1256,6 @@
     }
     .reader-pane {
       padding: 25px 22px;
-    }
-    .play-controls {
-      gap: 12px;
     }
     .transport {
       gap: 6px;
@@ -1449,10 +1271,6 @@
     }
     .song-heading h2 {
       font-size: 33px;
-    }
-    .desktop-reader-label {
-      font-size: 7px;
-      letter-spacing: 1px;
     }
     .song-info strong {
       font-size: 11px;
@@ -1474,8 +1292,6 @@
     .brand {
       margin: 0;
     }
-    .sidebar-caption,
-    .sidebar-tip,
     .import-button,
     .device-note,
     .new-song span {
@@ -1540,9 +1356,6 @@
     .brand strong {
       font-size: 23px;
     }
-    .brand div > span:not(.brand-period) {
-      font-size: 9px;
-    }
     .brand-mark {
       width: 37px;
     }
@@ -1553,8 +1366,6 @@
       font-size: 11px;
     }
     .new-song span,
-    .sidebar-caption,
-    .sidebar-tip,
     .device-note {
       display: none;
     }
@@ -1666,9 +1477,6 @@
       min-height: 44px;
       padding: 0;
     }
-    .desktop-reader-label {
-      display: none;
-    }
     .reader-actions {
       gap: 5px;
     }
@@ -1677,24 +1485,6 @@
     }
     .song-heading h2 {
       font-size: 37px;
-    }
-    .play-controls {
-      gap: 18px;
-      padding-top: 16px;
-    }
-    .control-group > span,
-    .control-group > label {
-      font-size: 8px;
-    }
-    .stepper {
-      height: 40px;
-    }
-    .stepper button {
-      min-height: 40px;
-      min-width: 35px;
-    }
-    .capo-select select {
-      height: 40px;
     }
     .sheet-scroll {
       height: calc(100dvh - 475px);
@@ -1738,9 +1528,6 @@
     }
     .next-song {
       font-size: 9px;
-    }
-    .reader-bottom {
-      font-size: 8px;
     }
     .popular-card {
       padding: 19px 0;
@@ -1846,12 +1633,6 @@
     .mobile-sheet .reader-pane {
       padding: 13px;
     }
-    .play-controls {
-      gap: 10px;
-    }
-    .settings-toggle {
-      min-width: 30px !important;
-    }
     .transport {
       gap: 5px;
       padding: 6px;
@@ -1888,11 +1669,7 @@
     .sidebar,
     .library-pane,
     .reader-top,
-    .play-controls,
-    .pitch-note,
     .transport,
-    .reader-bottom,
-    .reader-settings,
     .notice {
       display: none !important;
     }
@@ -1968,22 +1745,6 @@
   --cb-detail-12: #0004;
 }
 @layer components {
-  @media (max-width: 360px) {
-    .play-controls {
-      gap: 8px;
-    }
-    .stepper button {
-      min-width: 28px;
-    }
-    .stepper strong {
-      min-width: 28px;
-    }
-    .capo-select select {
-      font-size: 10px;
-      padding-left: 8px;
-      padding-right: 21px;
-    }
-  }
 }
 @layer components {
   .catalog-types {

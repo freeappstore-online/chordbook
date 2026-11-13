@@ -2,14 +2,14 @@ import Discover from "./Discover";
 import { CATALOG } from "./catalog";
 import Reader, { type ReaderMemory } from "./Reader";
 import Editor from "./Editor";
+import Settings, { DEFAULT_PREFS, validPrefs } from "./Settings";
 import { useEffect, useRef, useState } from "react";
 import { initApp } from "@freeappstore/sdk";
-import { Shell } from "@freeappstore/sdk/ui";
+import { ProfilePage, Shell } from "@freeappstore/sdk/ui";
 import { getPreference, setPreference } from "@freeappstore/sdk/persist";
 import {
   ArrowDown,
   ArrowUp,
-  BookOpen,
   Guitar,
   Heart,
   Library,
@@ -31,6 +31,7 @@ import { LIBRARY } from "./library";
 import { pwa } from "./pwa";
 export const fas = initApp({ appId: "chordbook" });
 const INITIAL = getPreference("chordbook", "songs", validSongs);
+const PREFS = getPreference("chordbook", "reader", validPrefs);
 
 export default function App() {
   const [path, setPath] = useState(location.pathname);
@@ -40,6 +41,9 @@ export default function App() {
   const [selected, setSelected] = useState("amazing-grace");
   const [tab, setTab] = useState<"library" | "discover" | "setlist">("library");
   const [search, setSearch] = useState("");
+  const [prefs, setPrefs] = useState(
+    PREFS.ok && PREFS.value ? PREFS.value : DEFAULT_PREFS,
+  );
   const [draft, setDraft] = useState<Song | null>(null);
   const [notice, setNotice] = useState(
     INITIAL.ok
@@ -147,6 +151,7 @@ export default function App() {
       app={fas}
       appName="Chordbook"
       onNavigate={navigate}
+      profileHref="/profile"
       headerActions={
         song &&
         path !== "/profile" && (
@@ -156,7 +161,25 @@ export default function App() {
         )
       }
     >
-      <div className={`chordbook ${playing ? "is-playing" : ""}`}>
+      {path === "/profile" && (
+        <>
+          <Settings
+            song={song}
+            update={update}
+            prefs={prefs}
+            setPrefs={(next) => {
+              setPrefs(next);
+              setPreference("chordbook", "reader", next, validPrefs);
+            }}
+            back={() => navigate("/")}
+          />
+          <ProfilePage app={fas} />
+        </>
+      )}
+      <div
+        className={`chordbook ${playing ? "is-playing" : ""}`}
+        hidden={path === "/profile"}
+      >
         {notice && (
           <div className="notice" role="status">
             {notice}
@@ -179,12 +202,9 @@ export default function App() {
               <div className="brand-mark">
                 <Guitar size={23} />
               </div>
-              <div>
-                <strong>
-                  Chordbook<span className="brand-period">.</span>
-                </strong>
-                <span>Your songs. Within reach.</span>
-              </div>
+              <strong>
+                Chordbook<span className="brand-period">.</span>
+              </strong>
             </div>
             <button
               className="primary new-song"
@@ -192,7 +212,6 @@ export default function App() {
             >
               <Plus size={18} /> New song <span>＋</span>
             </button>
-            <div className="sidebar-caption">YOUR SPACE</div>
             <nav aria-label="Song collection" className="collection-nav">
               <button
                 className={tab === "library" ? "active" : ""}
@@ -225,14 +244,6 @@ export default function App() {
                 Discover songs<span>{CATALOG.length}</span>
               </button>
             </nav>
-            <div className="sidebar-tip">
-              <div className="tiny-icon">
-                <BookOpen size={20} />
-              </div>
-              <strong>A little practice, every day.</strong>
-              <p>One song is all it takes to pick up your guitar.</p>
-              <span>LESS SCROLLING. MORE STRUMMING.</span>
-            </div>
             <button
               className="import-button"
               onClick={() => input.current?.click()}
@@ -246,16 +257,13 @@ export default function App() {
           </aside>
           <section className="library-pane">
             <div className="pane-heading">
-              <div>
-                <span className="eyebrow">PICK UP & PLAY</span>
-                <h1>
-                  {tab === "discover"
-                    ? "Find your next song"
-                    : tab === "setlist"
-                      ? "Your next set"
-                      : "Your songbook"}
-                </h1>
-              </div>
+              <h1>
+                {tab === "discover"
+                  ? "Find your next song"
+                  : tab === "setlist"
+                    ? "Your next set"
+                    : "Your songbook"}
+              </h1>
               <span className="count-pill">
                 {tab === "discover" ? CATALOG.length : visible.length} songs
               </span>
@@ -419,6 +427,7 @@ export default function App() {
                 memory={readerMemory.current}
                 key={song.id}
                 song={song}
+                prefs={prefs}
                 active={path !== "/profile" && !draft}
                 playing={playing}
                 setPlaying={setPlaying}

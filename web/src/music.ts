@@ -9,6 +9,8 @@ export interface Song {
   favorite: boolean;
   kind: "original" | "traditional" | "starter";
   note?: string;
+  // Semitones this song is transposed by when shown.
+  shift?: number;
 }
 export const SHARPS = [
   "C",
@@ -118,7 +120,9 @@ export function validSongs(value: unknown): value is Song[] {
         s.bpm >= 30 &&
         s.bpm <= 240 &&
         typeof s.favorite === "boolean" &&
-        ["original", "traditional", "starter"].includes(s.kind),
+        ["original", "traditional", "starter"].includes(s.kind) &&
+        (s.shift === undefined ||
+          (Number.isInteger(s.shift) && Math.abs(s.shift) < 12)),
     )
   );
 }
