@@ -148,9 +148,12 @@ export default function App() {
       appName="Chordbook"
       onNavigate={navigate}
       headerActions={
-        <span className="header-note">
-          <span className="status-dot" /> Made for your next song
-        </span>
+        song &&
+        path !== "/profile" && (
+          <strong className={`header-song ${mobileSheet ? "" : "list-view"}`}>
+            {song.title}
+          </strong>
+        )
       }
     >
       <div className={`chordbook ${playing ? "is-playing" : ""}`}>

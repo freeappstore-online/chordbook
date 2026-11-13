@@ -214,12 +214,12 @@
   .chordbook button svg {
     flex-shrink: 0;
   }
-  .header-note {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 11px;
-    color: var(--muted);
+  .header-song {
+    font-size: 14px;
+    max-width: 46vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
   .status-dot {
     width: 6px;
@@ -635,26 +635,14 @@
     min-height: 36px;
   }
   .song-heading {
+    display: none;
     margin: 29px 0 22px;
-  }
-  .song-heading > .eyebrow {
-    color: var(--cb-orange);
-    font-size: 7px;
   }
   .song-heading h2 {
     font-size: 38px;
     line-height: 1.15;
     letter-spacing: -1.2px;
     margin: 10px 0 9px;
-  }
-  .song-heading p {
-    font-size: 10px;
-    color: var(--cb-muted);
-    line-height: 1.7;
-    margin: 0;
-  }
-  .song-heading p span {
-    margin: 0 6px;
   }
   .play-controls {
     display: flex;
@@ -856,6 +844,11 @@
   }
   .lyric-text {
     white-space: pre-wrap;
+  }
+  .lyric-text a {
+    color: var(--cb-orange);
+    text-decoration: underline;
+    overflow-wrap: anywhere;
   }
   .sheet-space {
     height: 8px;
@@ -1391,6 +1384,7 @@
     height: auto;
   }
   .song-reader:fullscreen .song-heading {
+    display: block;
     margin: 15px 0;
   }
   .song-reader:fullscreen .reader-top {
@@ -1452,9 +1446,6 @@
     }
     .next-song {
       font-size: 8px;
-    }
-    .header-note {
-      display: none;
     }
     .song-heading h2 {
       font-size: 33px;
@@ -1661,6 +1652,9 @@
     .mobile-sheet .library-pane {
       display: none;
     }
+    .header-song.list-view {
+      display: none;
+    }
     .mobile-back {
       display: flex;
       align-items: center;
@@ -1683,9 +1677,6 @@
     }
     .song-heading h2 {
       font-size: 37px;
-    }
-    .song-heading p {
-      font-size: 10px;
     }
     .play-controls {
       gap: 18px;

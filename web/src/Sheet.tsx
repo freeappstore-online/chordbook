@@ -62,6 +62,7 @@ export function ChordDiagram({ chord }: { chord: string }) {
     </div>
   );
 }
+const URL_RE = /(https?:\/\/[^\s<>]*[^\s<>.,;:!?)'"])/;
 export function Sheet({
   body,
   shift = 0,
@@ -95,7 +96,24 @@ export function Sheet({
                     {transpose(p.chord, shift, flats)}
                   </span>
                 )}
-                <span className="lyric-text">{p.text || " "}</span>
+                <span className="lyric-text">
+                  {p.text
+                    ? p.text.split(URL_RE).map((part, k) =>
+                        k % 2 ? (
+                          <a
+                            key={k}
+                            href={part}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            {part}
+                          </a>
+                        ) : (
+                          part
+                        ),
+                      )
+                    : " "}
+                </span>
               </span>
             ))}
           </div>

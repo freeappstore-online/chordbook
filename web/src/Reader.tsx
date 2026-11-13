@@ -240,22 +240,7 @@ export default function Reader({
         </div>
       </div>
       <div className="song-heading">
-        <span className="eyebrow">
-          {song.kind === "traditional"
-            ? "THE CLASSICS NEVER GET OLD"
-            : song.kind === "starter"
-              ? "MAKE THIS ONE YOURS"
-              : "FROM YOUR SONGBOOK"}
-        </span>
         <h2>{song.title}</h2>
-        <p>
-          {song.artist || "Your original"} <span>·</span>{" "}
-          {song.kind === "traditional"
-            ? "Acoustic arrangement"
-            : song.kind === "starter"
-              ? "Chord practice starter"
-              : "Personal chord sheet"}
-        </p>
       </div>
       <div className="play-controls">
         <div className="control-group">
