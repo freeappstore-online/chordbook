@@ -3,6 +3,7 @@ import {
   transpose,
   parseLine,
   fromChordPro,
+  inlineChords,
   toChordPro,
   validSongs,
   chordsIn,
@@ -42,6 +43,18 @@ describe("guitar chord sheets", () => {
     expect(validSongs(POPULAR.map(popularStarter))).toBe(true);
     expect(validSongs([{ ...LIBRARY[0], capo: 99 }])).toBe(false);
     expect(validSongs([{ title: "bad" }])).toBe(false);
+  });
+  it("folds chords-over-lyrics text into ChordPro and leaves ChordPro alone", () => {
+    expect(
+      inlineChords(
+        "[Verse 1]\r\nG       C\r\nAmazing grace\r\n    D7\r\nHi\r\n\r\nChorus:\r\nAm  |  Dm7b5 x2",
+      ),
+    ).toBe(
+      "{section: Verse 1}\n[G]Amazing [C]grace\nHi  [D7]\n\n{section: Chorus}\n[Am]  |  [Dm7b5] x2",
+    );
+    const chordPro = "{section: Verse}\n[G]Amazing [C]grace\n[Am] [G]\nA line";
+    expect(inlineChords(chordPro)).toBe(chordPro);
+    expect(fromChordPro("{title: Demo}\nG\nHello").body).toBe("[G]Hello");
   });
   it("bounds imported files and ignores invalid metadata", () => {
     expect(() => fromChordPro("x".repeat(200001))).toThrow();

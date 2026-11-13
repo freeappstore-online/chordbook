@@ -125,12 +125,63 @@ export function validSongs(value: unknown): value is Song[] {
 export function toChordPro(song: Song) {
   return `{title: ${song.title}}\n{artist: ${song.artist}}\n{key: ${song.key}}\n{capo: ${song.capo}}\n{tempo: ${song.bpm}}\n\n${song.body}`;
 }
+// Looser than CHORD_RE: recognises chords such as Dm7b5 or E7#9 on a chord line.
+const CHORD_TOKEN =
+  /^[A-G][#b]?(?:maj|min|dim|aug|sus|add|m|M|\+|°)?\d*(?:(?:sus|add|maj|[#b+-])\d+|sus)*(?:\([^)]+\))?(?:\/[A-G][#b]?)?$/;
+const FILLER = /^(?:\|+|-+|%|\(?x\d+\)?|N\.?C\.?)$/i;
+const SECTION =
+  /^(?:\[([^\]]+)\]|((?:intro|verse|pre-?chorus|chorus|bridge|outro|solo|instrumental|interlude|refrain)(?: ?\d+)?):?)$/i;
+const isChordLine = (line: string) => {
+  const tokens = line.trim().split(/\s+/);
+  return (
+    tokens.some((t) => CHORD_TOKEN.test(t)) &&
+    tokens.every((t) => CHORD_TOKEN.test(t) || FILLER.test(t))
+  );
+};
+// Chord sites put chords on their own line above the lyric. Fold each chord
+// line into the lyric below it; text that is already ChordPro passes through.
+export function inlineChords(text: string): string {
+  const lines = text.replace(/\r\n?/g, "\n").split("\n");
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const section = line.trim().match(SECTION);
+    const label = section?.[1] ?? section?.[2];
+    if (label && !CHORD_TOKEN.test(label) && !FILLER.test(label)) {
+      out.push(`{section: ${label}}`);
+      continue;
+    }
+    if (!isChordLine(line)) {
+      out.push(line);
+      continue;
+    }
+    const next = lines[i + 1];
+    if (
+      !next?.trim() ||
+      /[[{]/.test(next) ||
+      isChordLine(next) ||
+      SECTION.test(next.trim())
+    ) {
+      out.push(
+        line.replace(/\S+/g, (t) => (CHORD_TOKEN.test(t) ? `[${t}]` : t)),
+      );
+      continue;
+    }
+    let lyric = next.padEnd(line.length);
+    for (const m of [...line.matchAll(/\S+/g)].reverse())
+      if (CHORD_TOKEN.test(m[0]))
+        lyric = `${lyric.slice(0, m.index)}[${m[0]}]${lyric.slice(m.index)}`;
+    out.push(lyric.trimEnd());
+    i++;
+  }
+  return out.join("\n");
+}
 export function fromChordPro(text: string): Song {
   if (text.length > 200000)
     throw new Error("Please use a file smaller than 200 KB.");
   const song = newSong();
   song.title = "Imported song";
-  song.body = text
+  song.body = inlineChords(text)
     .replace(
       /\{(title|t|artist|subtitle|st|key|capo|tempo):\s*([^}]*)\}/gi,
       (_, tag: string, value: string) => {

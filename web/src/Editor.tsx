@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { BookOpen, Check, Edit3, Plus, Trash2, X } from "lucide-react";
-import { CHORD_RE, SHARPS, type Song } from "./music";
+import { CHORD_RE, SHARPS, inlineChords, type Song } from "./music";
 import { Sheet } from "./Sheet";
 const KEYS = [
   ...SHARPS,
@@ -279,7 +279,19 @@ export default function Editor({
                     end: e.target.selectionEnd,
                   };
                 }}
-                placeholder="Type or paste lyrics here. Tap a chord to insert it above the next word."
+                onPaste={(e) => {
+                  const text = e.clipboardData.getData("text/plain");
+                  const converted = inlineChords(text);
+                  if (
+                    converted === text ||
+                    song.body.length + converted.length > 199999
+                  )
+                    return;
+                  e.preventDefault();
+                  select();
+                  insert(converted);
+                }}
+                placeholder="Type or paste a song here. Chords written above the lyrics are converted for you."
               />
               <div className="section-palette">
                 {["Verse", "Chorus", "Bridge", "Intro"].map((s) => (
@@ -294,8 +306,9 @@ export default function Editor({
               </div>
               <p className="editor-help">
                 Chords in brackets sit above the next lyric:{" "}
-                <code>[G]Amazing [C]grace</code>. Import ChordPro or paste your
-                own lyrics. Drafts are saved when you tap Save song.
+                <code>[G]Amazing [C]grace</code>. Paste a song copied from a
+                chord site and chords written above the lyrics are converted
+                for you. Drafts are saved when you tap Save song.
               </p>
             </>
           )}
