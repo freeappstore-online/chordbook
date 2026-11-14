@@ -10,7 +10,7 @@
     "generate:icons": "pwa-assets-generator --manifest=false"
   },
   "dependencies": {
-    "@freeappstore/sdk": "0.16.52",
+    "@freeappstore/sdk": "0.16.56",
     "lucide-react": "^1.72.0",
     "react": "^19",
     "react-dom": "^19"

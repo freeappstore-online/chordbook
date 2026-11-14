@@ -152,6 +152,7 @@ export default function App() {
       appName="Chordbook"
       onNavigate={navigate}
       profileHref="/profile"
+      headerAppearance={false}
       headerActions={
         song &&
         path !== "/profile" && (
